@@ -1,10 +1,12 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Formik, Form, FormikHelpers } from 'formik';
 import * as Yup from 'yup';
 import { Form as AntForm, Input, Button, Select, Upload, message } from 'antd';
 import { UploadOutlined } from '@ant-design/icons';
 import axios from "axios";
-import {config} from "../config.ts";
+import { config } from "../config.ts";
+import ReactQuill from 'react-quill';
+import 'react-quill/dist/quill.snow.css';
 
 const { Option } = Select;
 
@@ -76,110 +78,122 @@ const CreateProductForm: React.FC = () => {
                   setFieldValue,
                   errors,
                   touched,
-              }) => (
-                <Form className={`w-full max-w-screen-2xl px-9 py-3`}>
-                    <AntForm.Item
-                        label="Title"
-                        validateStatus={touched.title && errors.title ? 'error' : ''}
-                        help={touched.title && errors.title}
-                    >
-                        <Input
-                            name="title"
-                            value={values.title}
-                            onChange={handleChange}
-                            onBlur={handleBlur}
-                            placeholder="Enter title"
-                        />
-                    </AntForm.Item>
+                  setFieldTouched,
+                  isSubmitting,
+              }) => {
+                // eslint-disable-next-line react-hooks/rules-of-hooks
+                useEffect(() => {
+                    if (isSubmitting) {
+                        setFieldTouched('description', true);
+                    }
+                }, [isSubmitting, setFieldTouched]);
 
-                    <AntForm.Item
-                        label="Price"
-                        validateStatus={touched.price && errors.price ? 'error' : ''}
-                        help={touched.price && errors.price}
-                    >
-                        <Input
-                            type="number"
-                            name="price"
-                            value={values.price}
-                            onChange={handleChange}
-                            onBlur={handleBlur}
-                            placeholder="Enter price"
-                        />
-                    </AntForm.Item>
-
-                    <AntForm.Item
-                        label="Description"
-                        validateStatus={touched.description && errors.description ? 'error' : ''}
-                        help={touched.description && errors.description}
-                    >
-                        <Input.TextArea
-                            name="description"
-                            value={values.description}
-                            onChange={handleChange}
-                            onBlur={handleBlur}
-                            placeholder="Enter description"
-                            rows={4}
-                        />
-                    </AntForm.Item>
-
-                    <AntForm.Item
-                        label="Status"
-                        validateStatus={touched.status && errors.status ? 'error' : ''}
-                        help={touched.status && errors.status}
-                    >
-                        <Select
-                            value={values.status}
-                            onChange={(value) => setFieldValue('status', value)}
-                            onBlur={handleBlur}
-                            placeholder="Select status"
+                return (
+                    <Form className={`w-full max-w-screen-2xl px-9 py-3`}>
+                        <AntForm.Item
+                            label="Title"
+                            validateStatus={touched.title && errors.title ? 'error' : ''}
+                            help={touched.title && errors.title}
                         >
-                            <Option value="active">Active</Option>
-                            <Option value="inactive">Inactive</Option>
-                        </Select>
-                    </AntForm.Item>
+                            <Input
+                                name="title"
+                                value={values.title}
+                                onChange={handleChange}
+                                onBlur={handleBlur}
+                                placeholder="Enter title"
+                            />
+                        </AntForm.Item>
 
-                    <AntForm.Item
-                        label="Images"
-                        validateStatus={touched.images && errors.images ? 'error' : ''}
-                        help={touched.images && errors.images as []}
-                    >
-                        <Upload
-                            name="images"
-                            listType="picture-card"
-                            multiple={true}
-                            fileList={values.images.map((file) => ({
-                                uid: file.name,
-                                name: file.name,
-                                status: 'done',
-                                url: URL.createObjectURL(file),
-                            }))}
-                            beforeUpload={(file) => {
-                                setFieldValue('images', [...values.images, file]);
-                                return false;
-                            }}
-                            onRemove={(file) => {
-                                setFieldValue(
-                                    'images',
-                                    values.images.filter((image) => image.name !== file.name)
-                                );
-                            }}
-                            onPreview={(file) => {
-                                const src = file.url || file.preview;
-                                const imgWindow = window.open(src);
-                                imgWindow && imgWindow.document.write(`<img src="${src}" alt="Изображение"/>`);
-                            }}
+                        <AntForm.Item
+                            label="Price"
+                            validateStatus={touched.price && errors.price ? 'error' : ''}
+                            help={touched.price && errors.price}
                         >
-                            <Button icon={<UploadOutlined />}>Select Images</Button>
-                        </Upload>
-                    </AntForm.Item>
+                            <Input
+                                type="number"
+                                name="price"
+                                value={values.price}
+                                onChange={handleChange}
+                                onBlur={handleBlur}
+                                placeholder="Enter price"
+                            />
+                        </AntForm.Item>
 
-                    <AntForm.Item>
-                        <Button type="primary" htmlType="submit">
-                            Submit
-                        </Button>
-                    </AntForm.Item>
-                </Form>
-            )}
+                        <AntForm.Item
+                            label="Description"
+                            validateStatus={touched.description && errors.description ? 'error' : ''}
+                            help={touched.description && errors.description}
+                        >
+                            <ReactQuill
+                                value={values.description}
+                                onChange={(_content, _delta, _source, editor) => {
+                                    setFieldValue('description', editor.getHTML());
+                                }}
+                                onBlur={() => handleBlur({ target: { name: 'description' } })}
+                                placeholder="Enter description"
+                            />
+
+                        </AntForm.Item>
+
+                        <AntForm.Item
+                            label="Status"
+                            validateStatus={touched.status && errors.status ? 'error' : ''}
+                            help={touched.status && errors.status}
+                        >
+                            <Select
+                                value={values.status}
+                                onChange={(value) => setFieldValue('status', value)}
+                                onBlur={handleBlur}
+                                placeholder="Select status"
+                            >
+                                <Option value="active">Active</Option>
+                                <Option value="inactive">Inactive</Option>
+                            </Select>
+                        </AntForm.Item>
+
+                        <AntForm.Item
+                            label="Images"
+                            validateStatus={touched.images && errors.images ? 'error' : ''}
+                            help={touched.images && errors.images as []}
+                        >
+                            <Upload
+                                name="images"
+                                listType="picture-card"
+                                multiple={true}
+                                fileList={values.images.map((file) => ({
+                                    uid: file.name,
+                                    name: file.name,
+                                    status: 'done',
+                                    url: URL.createObjectURL(file),
+                                }))}
+                                beforeUpload={(file) => {
+                                    setFieldValue('images', [...values.images, file]);
+                                    return false;
+                                }}
+                                onRemove={(file) => {
+                                    setFieldValue(
+                                        'images',
+                                        values.images.filter((image) => image.name !== file.name)
+                                    );
+                                }}
+                                onPreview={(file) => {
+                                    const src = file.url || file.preview;
+                                    const imgWindow = window.open(src);
+                                    imgWindow && imgWindow.document.write(`<img src="${src}" alt="Изображение"/>`);
+                                }}
+                            >
+                                <Button icon={<UploadOutlined />}>Select Images</Button>
+                            </Upload>
+                        </AntForm.Item>
+
+                        <AntForm.Item>
+                            <Button type="primary" htmlType="submit">
+                                Submit
+                            </Button>
+                        </AntForm.Item>
+                    </Form>
+                );
+            }}
         </Formik>
     );
 };

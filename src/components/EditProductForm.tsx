@@ -6,6 +6,7 @@ import { Form as AntForm, Input, Button, Select, Upload, message, Spin } from 'a
 import { UploadOutlined } from '@ant-design/icons';
 import axios from 'axios';
 import {config} from "../config.ts";
+import ReactQuill from "react-quill";
 
 const { Option } = Select;
 
@@ -134,14 +135,17 @@ const EditProductForm: React.FC = () => {
                         validateStatus={touched.description && errors.description ? 'error' : ''}
                         help={touched.description && errors.description}
                     >
-                        <Input.TextArea
-                            name="description"
+                        <ReactQuill
                             value={values.description}
-                            onChange={handleChange}
-                            onBlur={handleBlur}
+                            onChange={(_content, _delta, _source, editor) => {
+                                setFieldValue('description', editor.getHTML());
+                            }}
+                            onBlur={() => handleBlur({ target: { name: 'description' } })}
                             placeholder="Enter description"
-                            rows={4}
                         />
+                        {touched.description && errors.description && (
+                            <div className="ant-form-item-explain-error">{errors.description}</div>
+                        )}
                     </AntForm.Item>
 
                     <AntForm.Item

@@ -5,6 +5,7 @@ import { config } from "../config.ts";
 import {EditOutlined} from "@ant-design/icons";
 import {useSelector} from "react-redux";
 import { RootState } from '../lib/store';
+import { htmlToText } from 'html-to-text';
 
 interface DataType {
     image: string;
@@ -51,6 +52,12 @@ const ProductsTable: React.FC = () => {
 
     const columns = [
         {
+          title: "Image",
+          dataIndex: "images",
+          key: "images",
+          render: (image: string) => <img src={image} alt="Фото"/>
+        },
+        {
             title: "Name",
             dataIndex: "name",
             key: "name",
@@ -72,7 +79,7 @@ const ProductsTable: React.FC = () => {
             title: "Description",
             dataIndex: "description",
             key: "description",
-            render: (text: string) => <h1>{text}</h1>,
+            render: (text: string) => <h1>{htmlToText(text)}</h1>,
         },
         {
             title: "Action",
