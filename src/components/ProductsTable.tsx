@@ -3,6 +3,8 @@ import { Table, Button, Popconfirm, Spin } from "antd";
 import axios from "axios";
 import { config } from "../config.ts";
 import {EditOutlined} from "@ant-design/icons";
+import {useSelector} from "react-redux";
+import { RootState } from '../lib/store';
 
 interface DataType {
     image: string;
@@ -16,11 +18,14 @@ interface DataType {
 const ProductsTable: React.FC = () => {
     const [products, setProducts] = useState<DataType[]>([]);
     const [loading, setLoading] = useState<boolean>(false);
+    const search = useSelector((state: RootState) => state.search);
 
     const fetchProducts = () => {
         setLoading(true);
         axios
-            .get(`${config.apiUrl}/api/products`)
+            .get(`${config.apiUrl}/api/products`, {
+                params: { search }
+            })
             .then((response) => setProducts(response.data))
             .catch((error) => console.error("Error fetching products:", error))
             .finally(() => setLoading(false));
@@ -42,7 +47,7 @@ const ProductsTable: React.FC = () => {
 
     useEffect(() => {
         fetchProducts();
-    }, []);
+    }, [search]);
 
     const columns = [
         {
